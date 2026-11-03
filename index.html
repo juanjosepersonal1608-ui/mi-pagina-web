@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pregunta importante ❤️</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 50%, #f472b6 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .handwritten {
+            font-family: 'Caveat', cursive;
+        }
+
+        /* Floating background hearts animation */
+        .bg-heart {
+            position: absolute;
+            color: rgba(244, 114, 182, 0.35);
+            animation: floatUp 8s infinite linear;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(105vh) scale(0.5) rotate(0deg);
+                opacity: 0;
+            }
+            20% {
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(-10vh) scale(1.2) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Pulse glow animation for card */
+        .card-glow {
+            box-shadow: 0 20px 50px rgba(236, 72, 153, 0.3);
+        }
+
+        /* Smooth dynamic movement for NO button */
+        #btnNo {
+            transition: transform 0.15s ease-out, left 0.3s ease, top 0.3s ease;
+        }
+
+        #btnYes {
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* Custom Bounce */
+        .gentle-bounce {
+            animation: gentleBounce 2s infinite;
+        }
+
+        @keyframes gentleBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4 relative">
+
+    <!-- Floating Background Elements -->
+    <div id="heartsContainer" class="fixed inset-0 overflow-hidden pointer-events-none z-0"></div>
+
+    <!-- Main Card Container -->
+    <main class="relative z-10 w-full max-w-md bg-white/80 backdrop-blur-md rounded-3xl p-6 md:p-8 card-glow border border-white/60 text-center shadow-2xl transition-all duration-500">
+        
+        <!-- Asking View -->
+        <div id="askSection" class="flex flex-col items-center">
+            <!-- Bear GIF / Illustration -->
+            <div class="relative w-48 h-48 mb-4 rounded-2xl overflow-hidden shadow-md border-4 border-pink-200 bg-pink-50 flex items-center justify-center">
+                <img id="mascotImg" 
+                     src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMnVzZzh4bjdyNmYxa29hZnd6MWtxdmdpeWV2bnpnYnNid21mMWZ2bSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/LpDmM2w9UPjupI4CMT/giphy.gif" 
+                     alt="Osito tierno rogando" 
+                     class="w-full h-full object-cover">
+            </div>
+
+            <!-- Title & Question -->
+            <h2 class="handwritten text-4xl font-bold text-pink-600 mb-2">Tengo una pregunta muy especial... y te dije que te iba a hacer una pagina para que me respondieras  ✨</h2>
+            <h1 id="questionText" class="text-2xl md:text-3xl font-extrabold text-gray-800 mb-6 leading-tight">
+                ¿Quieres ser mi novia? ❤️
+            </h1>
+
+            <!-- Counter / Teasing subtitle -->
+            <p id="subtext" class="text-sm font-semibold text-pink-500 mb-6 h-6 transition-all duration-300">
+                ¡Prometo hacerte muy feliz todos los días! 🌹
+            </p>
+
+            <!-- Action Buttons Area -->
+            <div id="buttonsArea" class="relative w-full h-24 flex items-center justify-center gap-4">
+                <!-- YES BUTTON -->
+                <button id="btnYes" onclick="acceptProposal()" 
+                        class="px-8 py-4 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold rounded-2xl shadow-lg hover:shadow-pink-300 transform active:scale-95 flex items-center gap-2 text-xl z-20 cursor-pointer">
+                    <i class="fa-solid fa-heart"></i> ¡Sí! 💕
+                </button>
+
+                <!-- NO BUTTON (Initial inline, then absolute when dodged) -->
+                <button id="btnNo" 
+                        class="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-2xl shadow text-base z-10 transition-all duration-200 cursor-pointer">
+                    No 💔
+                </button>
+            </div>
+        </div>
+
+        <!-- Success View (Initially hidden) -->
+        <div id="successSection" class="hidden flex-col items-center animate-fade-in">
+            <div class="relative w-56 h-56 mb-4 rounded-2xl overflow-hidden shadow-xl border-4 border-pink-300 bg-pink-100">
+                <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHY5b3gzaDRrcnIwbmlzeHZkZzRhdm01dG82eTgzbzFqdHN6dGFzYiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/MDJ9IbxxvDUQM/giphy.gif" 
+                     alt="Gatitos o ositos abrazándose" 
+                     class="w-full h-full object-cover">
+            </div>
+
+            <h1 class="handwritten text-5xl font-bold text-pink-600 mb-2">¡Saaaaabía que dirías que sí! 🎉💖</h1>
+            <p class="text-xl font-bold text-gray-800 mb-4">¡Eres lo mejor que me ha pasado! ✨</p>
+            
+            <div class="bg-pink-100 border border-pink-200 rounded-2xl p-4 mb-6 w-full text-pink-800 font-medium text-sm shadow-inner">
+                <p class="mb-1">💍 <strong>Promesa oficial:</strong></p>
+                <p>Muchos besos, abrazos infinitos, citas bonitas y amor sin fin desde hoy y para siempre. 🥰</p>
+            </div>
+
+            <!-- Replay Button -->
+            <button onclick="resetProposal()" class="text-xs text-pink-400 hover:text-pink-600 underline font-semibold flex items-center gap-1 cursor-pointer">
+                <i class="fa-solid fa-rotate-left"></i> Volver a vivir el momento
+            </button>
+        </div>
+
+    </main>
+
+    <!-- Script Section -->
+    <script>
+        // DOM Elements
+        const btnNo = document.getElementById('btnNo');
+        const btnYes = document.getElementById('btnYes');
+        const mascotImg = document.getElementById('mascotImg');
+        const subtext = document.getElementById('subtext');
+        const buttonsArea = document.getElementById('buttonsArea');
+        const askSection = document.getElementById('askSection');
+        const successSection = document.getElementById('successSection');
+
+        // State variables
+        let dodgeCount = 0;
+        let yesScale = 1;
+        let noScale = 1;
+
+        // Evasion Texts & Expressions
+        const noPhrases = [
+            "¿Estás segura? 🥺",
+            "¡Piénsalo bien! 💔",
+            "¿De verdad? 😭",
+            "¡Mira el otro botón! 👉",
+            "¡No acepto un no! 😜",
+            "¡Dile que sí por favor! 🌹",
+            "¡Te daré chocolates! 🍫",
+            "¡Te daré muchos besos! 😘",
+            "¡Casi le das al Sí! 😆",
+            "¡Error 404: 'No' no existe! ✨"
+        ];
+
+        const mascotGifs = [
+            "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMnVzZzh4bjdyNmYxa29hZnd6MWtxdmdpeWV2bnpnYnNid21mMWZ2bSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/LpDmM2w9UPjupI4CMT/giphy.gif", // Rogando
+            "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJndndvZ2YybTVsNmVjbnlyY28xdnI0YmZldDJzN2FhYnducnBydCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/7sfDvC1OXWXhC/giphy.gif", // Triste
+            "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZnd2a2VwYXZ5dW1icjI5MWg0bTNvZWRsZmVyZGVnNWk1dzRyeDRzeCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/ISOckXUvpE92w/giphy.gif", // Llorando
+            "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcnFpZXNkc2k5eTJ5Zm00cGU1MDRhbnVqMGRmdHZxeGN3OG92Z3o4NiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/OPU6wzx8JrHna/giphy.gif" // Ojos tristes
+        ];
+
+        // Background Hearts Generation
+        function createFloatingHearts() {
+            const container = document.getElementById('heartsContainer');
+            const heartIcons = ['fa-heart', 'fa-heart', 'fa-heart-pulse'];
+            
+            for (let i = 0; i < 25; i++) {
+                const heart = document.createElement('i');
+                const randomIcon = heartIcons[Math.floor(Math.random() * heartIcons.length)];
+                
+                heart.className = `fa-solid ${randomIcon} bg-heart`;
+                heart.style.left = `${Math.random() * 100}%`;
+                heart.style.animationDuration = `${5 + Math.random() * 7}s`;
+                heart.style.animationDelay = `${Math.random() * 5}s`;
+                heart.style.fontSize = `${14 + Math.random() * 24}px`;
+                
+                container.appendChild(heart);
+            }
+        }
+
+        // Logic for dodge and teleporting NO button
+        function dodgeNoButton() {
+            dodgeCount++;
+
+            // Ensure button becomes fixed/absolute inside view once dodge starts
+            if (btnNo.style.position !== 'fixed') {
+                btnNo.style.position = 'fixed';
+            }
+
+            // Calculate random screen bounds keeping it visible
+            const padding = 60;
+            const maxX = window.innerWidth - btnNo.offsetWidth - padding;
+            const maxY = window.innerHeight - btnNo.offsetHeight - padding;
+
+            const randomX = Math.max(padding, Math.floor(Math.random() * maxX));
+            const randomY = Math.max(padding, Math.floor(Math.random() * maxY));
+
+            btnNo.style.left = `${randomX}px`;
+            btnNo.style.top = `${randomY}px`;
+
+            // Change NO text playfully
+            const phraseIndex = Math.min(dodgeCount, noPhrases.length - 1);
+            btnNo.innerHTML = `${noPhrases[phraseIndex]}`;
+
+            // Make YES button grow bigger
+            yesScale += 0.25;
+            btnYes.style.transform = `scale(${yesScale})`;
+
+            // Make NO button smaller
+            noScale = Math.max(0.4, noScale - 0.08);
+            btnNo.style.transform = `scale(${noScale})`;
+
+            // Update mascot gif based on dodge level
+            if (dodgeCount > 1 && dodgeCount <= 4) {
+                mascotImg.src = mascotGifs[1];
+            } else if (dodgeCount > 4 && dodgeCount <= 7) {
+                mascotImg.src = mascotGifs[2];
+            } else if (dodgeCount > 7) {
+                mascotImg.src = mascotGifs[3];
+            }
+
+            // Update subtext prompt
+            subtext.innerText = `¡El "Sí" ya está gigantesco, no hay escapatoria! 😁`;
+        }
+
+        // Events for evasive behavior (Desktop Hover + Mobile Touch)
+        btnNo.addEventListener('mouseover', dodgeNoButton);
+        btnNo.addEventListener('touchstart', (e) => {
+            e.preventDefault(); // Prevents touch trigger click
+            dodgeNoButton();
+        });
+        btnNo.addEventListener('click', dodgeNoButton);
+
+        // Success Handler
+        function acceptProposal() {
+            // Hide asking section, show success
+            askSection.classList.add('hidden');
+            successSection.classList.remove('hidden');
+            successSection.classList.add('flex');
+
+            // Reset NO button position
+            btnNo.style.display = 'none';
+
+            // Trigger Fireworks & Confetti
+            triggerConfettiShower();
+        }
+
+        // Celebration Confetti effect
+        function triggerConfettiShower() {
+            const count = 200;
+            const defaults = {
+                origin: { y: 0.7 }
+            };
+
+            function fire(particleRatio, opts) {
+                confetti(Object.assign({}, defaults, opts, {
+                    particleCount: Math.floor(count * particleRatio)
+                }));
+            }
+
+            fire(0.25, {
+                spread: 26,
+                startVelocity: 55,
+                colors: ['#f472b6', '#ec4899', '#ffffff']
+            });
+            fire(0.2, {
+                spread: 60,
+                colors: ['#fb7185', '#e11d48', '#fbcfe8']
+            });
+            fire(0.35, {
+                spread: 100,
+                decay: 0.91,
+                scalar: 0.8
+            });
+            fire(0.1, {
+                spread: 120,
+                startVelocity: 25,
+                decay: 0.92,
+                colors: ['#ffe4e6', '#f43f5e']
+            });
+            fire(0.1, {
+                spread: 120,
+                startVelocity: 45,
+            });
+        }
+
+        // Reset App state
+        function resetProposal() {
+            dodgeCount = 0;
+            yesScale = 1;
+            noScale = 1;
+
+            btnYes.style.transform = `scale(1)`;
+            btnNo.style.transform = `scale(1)`;
+            btnNo.style.position = 'relative';
+            btnNo.style.left = 'auto';
+            btnNo.style.top = 'auto';
+            btnNo.style.display = 'inline-block';
+            btnNo.innerHTML = 'No 💔';
+
+            mascotImg.src = mascotGifs[0];
+            subtext.innerText = '¡Prometo hacerte muy feliz todos los días! 🌹';
+
+            successSection.classList.add('hidden');
+            successSection.classList.remove('flex');
+            askSection.classList.remove('hidden');
+        }
+
+        // Initialize background animation on load
+        window.onload = function() {
+            createFloatingHearts();
+        };
+    </script>
+</body>
+</html>
